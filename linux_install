@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Setup sources.list
+sudo sh -c '. /etc/lsb-release && echo "deb http://mirrors.ustc.edu.cn/ros/ubuntu/ $DISTRIB_CODENAME main" > /etc/apt/sources.list.d/ros-latest.list'
+
+# Set up keys
+sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+
+# Install ros-indigo-desktop-full
+# sudo apt-get update
+sudo apt-get install ros-indigo-desktop-full
+
+# Initialize rosdep
+SOURCE_LIST_D="/etc/ros/rosdep/sources.list.d/20-default.list"
+if [ ! -f "$SOURCE_LIST_D" ]; then
+	sudo rm -rf "/etc/ros/"
+	sudo mkdir -p "/etc/ros/rosdep/sources.list.d/"
+
+	sudo sh -c "echo 'yaml file://$(pwd)/sources/osx-homebrew.yaml osx' > '$SOURCE_LIST_D'"
+	sudo sh -c "echo 'yaml file://$(pwd)/sources/base.yaml' >> '$SOURCE_LIST_D'"
+	sudo sh -c "echo 'yaml file://$(pwd)/sources/python.yaml' >> '$SOURCE_LIST_D'"
+	sudo sh -c "echo 'gbpdistro file://$(pwd)/sources/fuerte.yaml fuerte' >> '$SOURCE_LIST_D'"
+fi
+
+export ROSDISTRO_INDEX_URL="file://$(pwd)/sources/index.yaml"
+rosdep update
+
+# Environment setup
+echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+# Getting rosinstall
+sudo apt-get install python-rosinstall
